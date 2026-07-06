@@ -190,8 +190,8 @@ pub fn run() {
                 return;
             }
 
-            // Re-apply after load as a compatibility pass for dynamically replaced
-            // documents and single-page applications. The script is idempotent.
+            // Apply shields at document-start and on every page transition to ensure
+            // protection before any resources load. The script is idempotent.
             let _ = apply_shields(webview);
 
             let status = match payload.event() {
