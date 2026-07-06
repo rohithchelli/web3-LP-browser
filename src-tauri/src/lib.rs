@@ -7,6 +7,87 @@ use tauri::{
 
 const SHIELDS_SCRIPT: &str = include_str!("shields.js");
 
+// Ad and tracker domain blocklists - checked at network level
+const AD_DOMAINS: &[&str] = &[
+    "doubleclick.net",
+    "googlesyndication.com",
+    "googleadservices.com",
+    "adservice.google.com",
+    "ads.yahoo.com",
+    "adnxs.com",
+    "advertising.com",
+    "adsrvr.org",
+    "criteo.com",
+    "taboola.com",
+    "outbrain.com",
+    "pubmatic.com",
+    "rubiconproject.com",
+    "openx.net",
+    "moatads.com",
+    "zedo.com",
+    "popads.net",
+    "propellerads.com",
+    "adcolony.com",
+    "mopub.com",
+    "mediaplex.com",
+    "adtech.de",
+    "adform.net",
+    "appnexus.com",
+    "casalemedia.com",
+    "exponential.com",
+    "mathtag.com",
+    "mookie1.com",
+    "netseer.com",
+    "sovrn.net",
+    "triplelift.com",
+    "turn.com",
+    "undertone.com",
+    "adroll.com",
+    "advertisingtech.net",
+    "bidder.smartadserver.com",
+    "smartadserver.com",
+    "yieldlab.de",
+    "yieldmo.com",
+    "glam.com",
+    "yieldkit.com",
+    "2mdn.net",
+    "ad.doubleclick.net",
+    "amazon-adsystem.com",
+    "gumgum.com",
+    "lijit.com",
+    "media.net",
+    "revcontent.com",
+];
+
+const TRACKER_DOMAINS: &[&str] = &[
+    "google-analytics.com",
+    "googletagmanager.com",
+    "facebook.net",
+    "connect.facebook.net",
+    "scorecardresearch.com",
+    "quantserve.com",
+    "hotjar.com",
+    "mixpanel.com",
+    "segment.io",
+    "amplitude.com",
+    "branch.io",
+    "chartbeat.com",
+    "crazyegg.com",
+    "mouseflow.com",
+    "intercom.io",
+    "appcues.com",
+    "optimizely.com",
+    "newrelic.com",
+    "datadog.com",
+    "sentry.io",
+    "addthis.com",
+    "shareaholic.com",
+    "clarity.ms",
+    "datadoghq.com",
+    "fullstory.com",
+    "segment.com",
+];
+
 #[derive(Clone, Copy)]
 struct ShieldConfig {
     enabled: bool,
@@ -62,6 +143,46 @@ fn validate_browser_label(label: &str) -> Result<(), String> {
     } else {
         Err("Invalid browser tab label".to_string())
     }
+}
+
+/// Check if a hostname matches any domain in the blocklist.
+/// Handles both exact matches and subdomains.
+fn is_blocked_domain(hostname: &str, domains: &[&str]) -> bool {
+    let normalized = hostname.to_lowercase();
+    for domain in domains {
+        if normalized == *domain || normalized.ends_with(&format!(".{}", domain)) {
+            return true;
+        }
+    }
+    false
+}
+
+/// Check if a URL should be blocked based on network-level filtering.
+fn should_block_request(url: &str, config: ShieldConfig) -> bool {
+    if !config.enabled {
+        return false;
+    }
+
+    let hostname = match Url::parse(url) {
+        Ok(parsed_url) => parsed_url.host_str().unwrap_or("").to_lowercase(),
+        Err(_) => return false,
+    };
+
+    if hostname.is_empty() {
+        return false;
+    }
+
+    // Always check ad domains
+    if is_blocked_domain(&hostname, AD_DOMAINS) {
+        return true;
+    }
+
+    // Check tracker domains if enabled
+    if config.block_trackers && is_blocked_domain(&hostname, TRACKER_DOMAINS) {
+        return true;
+    }
+
+    false
 }
 
 #[derive(Clone, Serialize)]
@@ -126,7 +247,16 @@ async fn browser_create_webview(
         .incognito(incognito)
         .devtools(true)
         .zoom_hotkeys_enabled(true)
-        .focused(focus);
+        .focused(focus)
+        .web_resource_request_handler(|request| {
+            // Network-level request filtering: block ads/trackers before they load
+            let config = current_shield_config();
+            if should_block_request(request.uri(), config) {
+                tauri::webview::WebResourceRequestHandlerResponse::block()
+            } else {
+                tauri::webview::WebResourceRequestHandlerResponse::proceed()
+            }
+        });
 
     window
         .add_child(
