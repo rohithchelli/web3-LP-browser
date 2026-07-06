@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Next.js generated files
+.next/
+out/
+dist/
+build/
+
+# Rust and Tauri build files
+target/
+src-tauri/target/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Generated TypeScript files
+next-env.d.ts
+*.tsbuildinfo

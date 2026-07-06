@@ -1,0 +1,78 @@
+Web 3 Browser Shields v0.3.4 validation results
+================================================
+
+[1] Shield script syntax
+PASS
+
+[2] Changed TypeScript/TSX syntax
+PASS  lib/browser/types.ts
+PASS  components/browser/webview.tsx
+PASS  components/browser/settings-panel.tsx
+
+[3] Navigation checks
+Navigation checks passed.
+
+[4] Native browser wiring checks
+Native browser wiring check passed.
+
+[5] Shield safety and wiring checks
+PASS  Rust embeds the shield script
+PASS  Rust exposes shield settings
+PASS  Rust exposes shield application
+PASS  Rust stores the YouTube ad-accelerator setting
+PASS  Rust injects the ad-accelerator setting
+PASS  Shields run before remote page scripts
+PASS  Shields reapply during native page loads
+PASS  Dynamic ad containers and player state are observed
+PASS  Fetch requests are filtered
+PASS  XHR requests are filtered
+PASS  Known ad hosts are included
+PASS  YouTube Skip Ad controls are handled
+PASS  YouTube Close Ad controls are handled
+PASS  YouTube promoted cards are hidden
+PASS  Acceleration requires YouTube ad-showing state
+PASS  Acceleration also requires visible ad-only UI
+PASS  Ad state must be confirmed more than once
+PASS  Media changes enforce a one-second safety cooldown
+PASS  Only short ad-like media can be accelerated
+PASS  Media/source transitions immediately stop acceleration
+PASS  Verified video ads are accelerated
+PASS  Original playback speed is restored
+PASS  Shields never seek the video timeline
+PASS  Shields never change video mute state
+PASS  Shields never change video volume
+PASS  Shields never force media playback
+PASS  Shields never pause media playback
+PASS  Broad non-ad Skip buttons are not clicked
+PASS  Browser settings persist the accelerator toggle
+PASS  Frontend syncs the accelerator setting to Rust
+PASS  Settings expose the guarded accelerator toggle
+PASS  Frontend requests Rust-created child webviews
+PASS  Frontend syncs saved settings to Rust
+PASS  Frontend applies shields to child webviews
+PASS  Settings expose a compatibility toggle
+
+35 shield safety and wiring checks passed.
+
+[6] Ad accelerator behavioral checks
+PASS  First ad observation does not accelerate
+PASS  Confirmed short video ad accelerates to 8x
+PASS  Normal playback speed is restored when ad state ends
+PASS  Ad UI alone cannot accelerate normal video
+PASS  Long media is never accelerated
+PASS  Second verified short ad accelerates
+PASS  Media boundary immediately restores playback speed
+PASS  Media boundary starts a safety cooldown
+
+Ad accelerator behavioral checks passed.
+
+[7] Configuration parsing and public registry scan
+PASS  package.json
+PASS  package-lock.json
+PASS  src-tauri/tauri.conf.json
+PASS  src-tauri/capabilities/default.json
+PASS  src-tauri/Cargo.toml
+PASS  package-lock uses the public npm registry
+
+[8] Clean source package scan
+PASS  no node_modules, .next, out or tsconfig.tsbuildinfo included

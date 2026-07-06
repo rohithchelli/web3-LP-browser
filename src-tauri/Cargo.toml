@@ -1,0 +1,16 @@
+[package]
+name = "web3-browser"
+version = "0.3.4"
+description = "A native multi-tab Tauri and Next.js browser with built-in privacy shields with a guarded YouTube ad-only playback accelerator."
+edition = "2021"
+
+[lib]
+name = "web3_browser_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2.11", features = ["unstable", "devtools"] }
+serde = { version = "1", features = ["derive"] }
